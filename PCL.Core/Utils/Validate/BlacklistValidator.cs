@@ -1,29 +1,26 @@
 using System.Collections.Generic;
+using System.Linq;
 using FluentValidation;
 using FluentValidation.Results;
+using PCL.Core.App.Localization;
 
 namespace PCL.Core.Utils.Validate;
 
 public class BlacklistValidator(List<string> contains) : AbstractValidator<string>
 {
-    public List<string> Blacklist { get; set; } = contains;
-
     public BlacklistValidator() : this([])
     {
     }
+
+    public List<string> Blacklist { get; set; } = contains;
 
     private void _BuildRules()
     {
         RuleFor(x => x)
             .Custom((input, context) =>
             {
-                foreach (var items in Blacklist)
-                {
-                    if (input.Contains(items))
-                    {
-                        context.AddFailure($"输入内容不能包含 {items}！");
-                    }
-                }
+                foreach (var items in Blacklist.Where(input.Contains))
+                    context.AddFailure(Lang.Text("Common.Validate.Blacklisted", items));
             });
     }
 
